@@ -1350,6 +1350,7 @@ function unlockScreenOrientation() {
 }
 
 
+
 /* ==========================================
    PLAYER NAVIGATION AUTO HIDE
 ========================================== */
@@ -1362,34 +1363,9 @@ function showPlayerNavigation() {
 
     videoContainer.classList.add("show-navigation");
     playerShell?.classList.add("show-navigation");
-}
 
-function scheduleNavigationHide() {
-    clearTimeout(navigationTimer);
-
-    navigationTimer = setTimeout(() => {
-        hidePlayerNavigation();
-    }, NAVIGATION_HIDE_DELAY);
-}
-
-function hidePlayerNavigation() {
-    clearTimeout(navigationTimer);
-    navigationTimer = null;
-
-    videoContainer?.classList.remove("show-navigation");
-    playerShell?.classList.remove("show-navigation");
-}
-
-
-
-function showPlayerNavigation() {
-    if (!videoContainer) return;
-
-    clearTimeout(navigationTimer);
-    navigationTimer = null;
-
-    videoContainer.classList.add("show-navigation");
-    playerShell?.classList.add("show-navigation");
+    // Automatically hide after 3 seconds of inactivity
+    scheduleNavigationHide();
 }
 
 function scheduleNavigationHide() {
@@ -1416,13 +1392,12 @@ function handleFullscreenChange() {
             screen.orientation.lock("landscape").catch(() => {});
         }
 
-        scheduleNavigationHide();
-
     } else {
         unlockScreenOrientation();
         hidePlayerNavigation();
     }
 }
+
 
 
 
