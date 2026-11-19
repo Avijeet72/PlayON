@@ -290,3 +290,11 @@ button,a,input{-webkit-tap-highlight-color:transparent}
     pointer-events: auto;
 }
 
+/* FIX: Keep Full Screen, Fit and Stretch visible */
+.screen-controls {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
