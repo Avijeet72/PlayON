@@ -14,7 +14,7 @@
 const DEFAULT_SERVERS = [
     {
         name: "Server 1 - AynaOTT",
-        url: "https://raw.githubusercontent.com/sm-monirulislam/AynaOTT_Auto_Update_Playlist/1aad8768e9382e742b690011fe5ccd6608a8733b/aynaott.m3u"
+        url: "https://raw.githubusercontent.com/Avijeet72/my-playlist/refs/heads/main/19-11-26.m3u?token=GHSAT0AAAAAAEPUTIAWXPE7KJM6JMAXMWA62X7JKHA"
     },
     {
         name: "Server 2 - BDIX IPTV",
