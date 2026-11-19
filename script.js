@@ -9,7 +9,6 @@
 
 /* ==========================================
    DEFAULT SERVER SETTINGS
-   ভবিষ্যতে শুধু Name এবং URL পরিবর্তন করবে
 ========================================== */
 
 const DEFAULT_SERVERS = [
@@ -36,7 +35,7 @@ const DEFAULT_SERVERS = [
 ];
 
 const PROXY_URL =
-"https://gentle-dawn-5afd.avijeetroy072.workers.dev/";
+    "https://gentle-dawn-5afd.avijeetroy072.workers.dev/";
 
 const STORAGE_KEY = "playon_servers_v1";
 const FILE_DB_NAME = "playon_local_playlists";
@@ -44,11 +43,10 @@ const FILE_DB_VERSION = 1;
 const FILE_STORE_NAME = "playlists";
 
 const OLD_IPTV_ORG_URL =
-"https://iptv-org.github.io/iptv/index.m3u";
+    "https://iptv-org.github.io/iptv/index.m3u";
 
 const NAVIGATION_HIDE_DELAY = 3000;
 
-// Auto fallback settings
 const STREAM_START_TIMEOUT = 12000;
 const NETWORK_RETRY_DELAY = 1500;
 const MAX_NETWORK_RETRIES = 1;
@@ -73,7 +71,6 @@ let currentChannelIndex = -1;
 let currentVideoMode = "fit";
 let navigationTimer = null;
 
-// Fallback state
 let playbackSession = 0;
 let fallbackQueue = [];
 let startupTimer = null;
@@ -915,7 +912,6 @@ function buildFallbackQueue(originalIndex) {
 
     const targetName = normalizeChannelName(original.name);
 
-    // First: Find the same channel in other loaded servers
     const sameChannelMatches = channelList
         .map((channel, index) => ({
             ...channel,
@@ -926,7 +922,6 @@ function buildFallbackQueue(originalIndex) {
             normalizeChannelName(channel.name) === targetName
         );
 
-    // Avoid duplicate stream URLs
     const usedURLs = new Set([original.url]);
 
     sameChannelMatches.forEach(channel => {
@@ -936,7 +931,6 @@ function buildFallbackQueue(originalIndex) {
         }
     });
 
-    // Second: Try the next channel in the original server
     const originalServerChannels = channelList
         .map((channel, index) => ({
             ...channel,
@@ -1017,7 +1011,6 @@ function tryNextFallback(session) {
         }
     }
 
-    // No other stream or next channel available
     channelName.textContent = "Stream unavailable";
 
     console.warn("PlayON: All fallback attempts failed.");
@@ -1066,27 +1059,22 @@ function startChannelAttempt(index, session) {
         const player = new Hls({
             startPosition: -1,
 
-            // Buffer settings
             maxBufferLength: 15,
             maxMaxBufferLength: 30,
             maxBufferSize: 30 * 1000 * 1000,
             backBufferLength: 10,
 
-            // Live stream settings
             lowLatencyMode: false,
             liveSyncDurationCount: 2,
             liveMaxLatencyDurationCount: 6,
             maxLiveSyncPlaybackRate: 1.2,
 
-            // Manifest retry
             manifestLoadingMaxRetry: 4,
             manifestLoadingRetryDelay: 1000,
 
-            // Quality retry
             levelLoadingMaxRetry: 4,
             levelLoadingRetryDelay: 1000,
 
-            // Segment retry
             fragLoadingMaxRetry: 4,
             fragLoadingRetryDelay: 1000,
 
@@ -1191,12 +1179,10 @@ function playChannel(index) {
 
     if (!channel) return;
 
-    // Create a new playback session
     cancelFallback();
 
     const session = playbackSession;
 
-    // Build fallback list before starting playback
     fallbackQueue = buildFallbackQueue(index);
 
     console.info(
@@ -1371,9 +1357,14 @@ function unlockScreenOrientation() {
 function showPlayerNavigation() {
     if (!videoContainer) return;
 
+    clearTimeout(navigationTimer);
+    navigationTimer = null;
+
     videoContainer.classList.add("show-navigation");
     playerShell?.classList.add("show-navigation");
+}
 
+function scheduleNavigationHide() {
     clearTimeout(navigationTimer);
 
     navigationTimer = setTimeout(() => {
@@ -1577,12 +1568,14 @@ function installNavigationCSS() {
         }
 
         #player-shell .screen-controls {
+            display: flex !important;
             opacity: 0 !important;
             visibility: hidden !important;
             pointer-events: none !important;
-            transition:
-                opacity .25s ease,
-                visibility .25s ease !important;
+            position: relative !important;
+            z-index: 130 !important;
+            flex-shrink: 0 !important;
+            transition: opacity .25s ease, visibility .25s ease !important;
         }
 
         #player-shell.show-navigation .screen-controls {
@@ -1600,24 +1593,18 @@ function installNavigationCSS() {
             top: 50% !important;
             left: 50% !important;
             transform: translate(-50%, -50%) !important;
-
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
             justify-content: center !important;
             gap: 24px !important;
-
             width: auto !important;
             height: auto !important;
             z-index: 100 !important;
-
             opacity: 0 !important;
             visibility: hidden !important;
             pointer-events: none !important;
-
-            transition:
-                opacity .25s ease,
-                visibility .25s ease !important;
+            transition: opacity .25s ease, visibility .25s ease !important;
         }
 
         #video-container.show-navigation .video-navigation {
@@ -1735,37 +1722,56 @@ $("details-next-btn").addEventListener("click", nextChannel);
    PLAYER INTERACTION
 ========================================== */
 
-videoContainer.addEventListener("click", event => {
-    if (event.target.closest(".video-navigation button")) {
-        return;
+// Desktop mouse and pen interaction.
+playerShell.addEventListener("pointerenter", event => {
+    if (event.pointerType !== "touch") {
+        showPlayerNavigation();
     }
-
-    showPlayerNavigation();
 });
 
-videoContainer.addEventListener("touchstart", () => {
-    showPlayerNavigation();
+playerShell.addEventListener("pointermove", event => {
+    if (event.pointerType !== "touch") {
+        showPlayerNavigation();
+    }
 }, { passive: true });
 
-videoContainer.addEventListener("mousemove", () => {
-    showPlayerNavigation();
-}, { passive: true });
+// Hide only after leaving the complete player area.
+playerShell.addEventListener("pointerleave", event => {
+    if (event.pointerType !== "touch") {
+        scheduleNavigationHide();
+    }
+});
 
-videoContainer.addEventListener("pointerdown", () => {
-    showPlayerNavigation();
-}, { passive: true });
-
-playerShell.addEventListener("mousemove", () => {
-    showPlayerNavigation();
-}, { passive: true });
-
+// Mobile touch interaction.
 playerShell.addEventListener("touchstart", () => {
     showPlayerNavigation();
 }, { passive: true });
 
-playerShell.addEventListener("pointerdown", () => {
-    showPlayerNavigation();
+playerShell.addEventListener("touchend", () => {
+    scheduleNavigationHide();
 }, { passive: true });
+
+playerShell.addEventListener("touchcancel", () => {
+    scheduleNavigationHide();
+}, { passive: true });
+
+// Keyboard accessibility.
+playerShell.addEventListener("focusin", () => {
+    showPlayerNavigation();
+});
+
+playerShell.addEventListener("focusout", event => {
+    if (!playerShell.contains(event.relatedTarget)) {
+        scheduleNavigationHide();
+    }
+});
+
+// Clicking the video also reveals the controls.
+videoContainer.addEventListener("click", event => {
+    if (!event.target.closest(".video-navigation button")) {
+        showPlayerNavigation();
+    }
+});
 
 
 /* ==========================================
@@ -1810,3 +1816,38 @@ if (document.readyState === "loading") {
 } else {
     initializePlayOn();
 }
+// PLAYON PLAYER AUTO HIDE
+(() => {
+    const player = document.getElementById("player-shell");
+    const video = document.getElementById("video-container");
+
+    if (!player || !video) return;
+
+    let hideTimer;
+
+    function showControls() {
+        player.classList.add("show-navigation");
+        video.classList.add("show-navigation");
+
+        clearTimeout(hideTimer);
+
+        hideTimer = setTimeout(() => {
+            player.classList.remove("show-navigation");
+            video.classList.remove("show-navigation");
+        }, 3000);
+    }
+
+    player.addEventListener("pointermove", showControls);
+    player.addEventListener("pointerenter", showControls);
+
+    player.addEventListener("pointerleave", () => {
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+            player.classList.remove("show-navigation");
+            video.classList.remove("show-navigation");
+        }, 3000);
+    });
+
+    player.addEventListener("touchstart", showControls, { passive: true });
+    player.addEventListener("touchend", showControls, { passive: true });
+})();
