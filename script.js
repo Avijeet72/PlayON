@@ -1380,6 +1380,34 @@ function hidePlayerNavigation() {
     playerShell?.classList.remove("show-navigation");
 }
 
+
+
+function showPlayerNavigation() {
+    if (!videoContainer) return;
+
+    clearTimeout(navigationTimer);
+    navigationTimer = null;
+
+    videoContainer.classList.add("show-navigation");
+    playerShell?.classList.add("show-navigation");
+}
+
+function scheduleNavigationHide() {
+    clearTimeout(navigationTimer);
+
+    navigationTimer = setTimeout(() => {
+        hidePlayerNavigation();
+    }, NAVIGATION_HIDE_DELAY);
+}
+
+function hidePlayerNavigation() {
+    clearTimeout(navigationTimer);
+    navigationTimer = null;
+
+    videoContainer?.classList.remove("show-navigation");
+    playerShell?.classList.remove("show-navigation");
+}
+
 function handleFullscreenChange() {
     if (isPlayerFullscreen()) {
         showPlayerNavigation();
@@ -1388,11 +1416,14 @@ function handleFullscreenChange() {
             screen.orientation.lock("landscape").catch(() => {});
         }
 
+        scheduleNavigationHide();
+
     } else {
         unlockScreenOrientation();
         hidePlayerNavigation();
     }
 }
+
 
 
 /* ==========================================
@@ -1497,6 +1528,7 @@ function prepareScreenControls() {
 }
 
 
+
 /* ==========================================
    NAVIGATION CSS
 ========================================== */
@@ -1538,43 +1570,19 @@ function installNavigationCSS() {
             min-width: 0 !important;
             min-height: 0 !important;
             aspect-ratio: auto !important;
-            align-self: stretch !important;
             background: #000 !important;
             overflow: hidden !important;
         }
 
-        #player-shell:fullscreen #video,
-        #player-shell:-webkit-full-screen #video {
-            position: absolute !important;
-            inset: 0 !important;
-            display: block !important;
-            width: 100% !important;
-            height: 100% !important;
-            max-width: none !important;
-            max-height: none !important;
-            object-fit: var(--playon-video-fit, contain) !important;
-            background: #000 !important;
-        }
-
-        #player-shell:fullscreen .screen-controls,
-        #player-shell:-webkit-full-screen .screen-controls {
-            position: absolute !important;
-            bottom: 18px !important;
-            right: 20px !important;
-            z-index: 120 !important;
-            background: rgba(0,0,0,.55) !important;
-            border-radius: 10px !important;
-            padding: 6px !important;
-        }
-
+        /* SCREEN CONTROLS */
         #player-shell .screen-controls {
             display: flex !important;
+            position: relative !important;
+            z-index: 9999 !important;
+            flex-shrink: 0 !important;
             opacity: 0 !important;
             visibility: hidden !important;
             pointer-events: none !important;
-            position: relative !important;
-            z-index: 130 !important;
-            flex-shrink: 0 !important;
             transition: opacity .25s ease, visibility .25s ease !important;
         }
 
@@ -1584,6 +1592,26 @@ function installNavigationCSS() {
             pointer-events: auto !important;
         }
 
+        /* FULLSCREEN CONTROLS */
+        #player-shell:fullscreen .screen-controls,
+        #player-shell:-webkit-full-screen .screen-controls {
+            position: absolute !important;
+            bottom: 18px !important;
+            right: 20px !important;
+            z-index: 99999 !important;
+            background: rgba(0,0,0,.65) !important;
+            border-radius: 10px !important;
+            padding: 8px !important;
+        }
+
+        #player-shell:fullscreen.show-navigation .screen-controls,
+        #player-shell:-webkit-full-screen.show-navigation .screen-controls {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+
+        /* VIDEO NAVIGATION */
         #video-container {
             position: relative !important;
         }
@@ -1643,6 +1671,13 @@ function installNavigationCSS() {
         }
 
         @media (max-width: 700px) {
+            #player-shell:fullscreen .screen-controls,
+            #player-shell:-webkit-full-screen .screen-controls {
+                right: 10px !important;
+                bottom: 10px !important;
+                padding: 6px !important;
+            }
+
             #video-container .video-navigation {
                 gap: 15px !important;
             }
@@ -1681,6 +1716,7 @@ function installNavigationCSS() {
 
     document.head.appendChild(style);
 }
+
 
 
 /* ==========================================
@@ -1816,38 +1852,3 @@ if (document.readyState === "loading") {
 } else {
     initializePlayOn();
 }
-// PLAYON PLAYER AUTO HIDE
-(() => {
-    const player = document.getElementById("player-shell");
-    const video = document.getElementById("video-container");
-
-    if (!player || !video) return;
-
-    let hideTimer;
-
-    function showControls() {
-        player.classList.add("show-navigation");
-        video.classList.add("show-navigation");
-
-        clearTimeout(hideTimer);
-
-        hideTimer = setTimeout(() => {
-            player.classList.remove("show-navigation");
-            video.classList.remove("show-navigation");
-        }, 3000);
-    }
-
-    player.addEventListener("pointermove", showControls);
-    player.addEventListener("pointerenter", showControls);
-
-    player.addEventListener("pointerleave", () => {
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(() => {
-            player.classList.remove("show-navigation");
-            video.classList.remove("show-navigation");
-        }, 3000);
-    });
-
-    player.addEventListener("touchstart", showControls, { passive: true });
-    player.addEventListener("touchend", showControls, { passive: true });
-})();
