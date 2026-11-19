@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#090909">
+    <title>PlayON | Live TV</title>
+
+    <link rel="icon" href="data:,">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+
+<body>
+
+<header class="topbar" id="home">
+    <a class="brand" href="#home">
+        <span class="brand-icon">P</span>
+        <span>PLAY<span class="brand-green">ON</span></span>
+    </a>
+
+    <nav class="top-nav">
+        <a href="#home" class="active">Home</a>
+        <a href="#watch">Live TV</a>
+        <a href="#channel-guide">Channels</a>
+    </nav>
+
+    <button class="header-search-btn" id="header-search-btn">
+        ⌕ <span class="search-button-text">Search</span>
+    </button>
+
+    <div class="header-live">
+        <span class="live-dot"></span> LIVE TELEVISION
+    </div>
+</header>
+
+<main class="page">
+
+    <section class="watch-section" id="watch">
+
+        <div class="section-heading">
+            <div>
+                <span class="small-label">YOUR ENTERTAINMENT</span>
+                <h1>Watch Live TV</h1>
+            </div>
+
+            <div class="live-tag">
+                <span class="live-dot"></span> LIVE
+            </div>
+        </div>
+
+        <div class="player-shell" id="player-shell">
+
+            <div class="player-top">
+                <span>NOW PLAYING</span>
+                <span class="player-live">
+                    <span class="live-dot"></span> ON AIR
+                </span>
+            </div>
+
+            <div class="video-container" id="video-container">
+
+                <video
+                    id="video"
+                    controls
+                    playsinline
+                    preload="none">
+                </video>
+
+                <div class="video-navigation">
+                    <button type="button" id="video-previous-btn">‹</button>
+                    <button type="button" id="video-next-btn">›</button>
+                </div>
+
+            </div>
+
+            <div class="screen-controls">
+                <button type="button" id="fullscreen-btn">
+                    ⛶ Full Screen
+                </button>
+
+                <button type="button" id="fit-btn" class="active">
+                    Fit
+                </button>
+
+                <button type="button" id="stretch-btn">
+                    Stretch
+                </button>
+            </div>
+
+            <div class="player-details">
+
+                <div class="current-channel">
+                    <span class="small-label">CURRENT CHANNEL</span>
+                    <h2 id="channel-name">Select a Channel</h2>
+                    <p>Your live television experience starts here.</p>
+                </div>
+
+                <div class="player-navigation">
+                    <button type="button" id="details-previous-btn">‹ Previous</button>
+                    <button type="button" id="details-next-btn">Next ›</button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="guide-section" id="channel-guide">
+
+        <div class="guide-heading">
+            <div>
+                <span class="small-label">EXPLORE YOUR PLAYLIST</span>
+                <h2>All Channels</h2>
+                <p>All channels from your playlists in one place.</p>
+            </div>
+
+            <span class="channel-count" id="channel-count">0 CHANNELS</span>
+        </div>
+
+        <div class="guide-layout">
+
+            <div class="channels-panel">
+
+                <div class="channel-panel-heading">
+                    <span class="small-label">YOUR COMPLETE CHANNEL LIST</span>
+                    <h3>All Channels</h3>
+                </div>
+
+                <div class="search-box">
+                    <span class="search-icon">⌕</span>
+
+                    <input
+                        type="search"
+                        id="channel-search"
+                        placeholder="Search channels..."
+                        autocomplete="off">
+
+                    <button type="button" id="clear-search">×</button>
+                </div>
+
+                <div id="channels">
+                    <div class="empty-state">
+                        <div class="empty-symbol">TV</div>
+                        <h3>No channels yet</h3>
+                        <p>Loading your playlists...</p>
+                    </div>
+                </div>
+
+                <p class="search-status" id="search-status"></p>
+
+            </div>
+
+            <aside class="playlist-panel" id="playlist-panel">
+
+                <div class="panel-heading">
+                    <span class="panel-icon">＋</span>
+                    <div>
+                        <h3>Playlist Servers</h3>
+                        <p>Manage your M3U sources</p>
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+    </section>
+
+</main>
+
+<footer class="footer">
+
+    <div class="footer-brand">PlayON</div>
+
+    <p>Your Entertainment, Your Way.</p>
+
+    <div class="footer-credit">
+        Designed &amp; Developed by
+        <strong>Avijeet Kumar Roy</strong>
+    </div>
+
+    <div class="footer-copyright">
+        © 2026 PlayON. All rights reserved.
+    </div>
+
+</footer>
+
+<nav class="mobile-nav">
+    <a href="#home"><span>⌂</span>Home</a>
+    <a href="#watch"><span>▶</span>Live TV</a>
+    <button type="button" id="mobile-search-btn">
+        <span>⌕</span>Search
+    </button>
+    <a href="#playlist-panel"><span>＋</span>Playlist</a>
+</nav>
+
+<script src="script.js"></script>
+
+</body>
+</html>
