@@ -298,3 +298,37 @@ button,a,input{-webkit-tap-highlight-color:transparent}
     pointer-events: auto !important;
 }
 
+
+/* ==========================================
+   ANDROID TV REMOTE FOCUS STYLE
+========================================== */
+
+/* Channel selected by TV remote */
+#channels .channel:focus,
+#channels .channel:focus-visible {
+    outline: 3px solid #ffb900 !important;
+    outline-offset: 2px !important;
+    background: rgba(229, 9, 20, .25) !important;
+    border-color: #ffb900 !important;
+    transform: translateX(3px);
+    box-shadow: 0 0 14px rgba(255, 185, 0, .25);
+}
+
+/* Player buttons focus */
+.player-shell button:focus-visible {
+    outline: 3px solid #ffb900 !important;
+    outline-offset: 3px !important;
+    border-color: #ffb900 !important;
+    box-shadow: 0 0 14px rgba(255, 185, 0, .25);
+}
+
+/* Server tabs and other buttons */
+button:focus-visible {
+    outline-color: #ffb900;
+}
+
+/* TV remote friendly focus transition */
+#channels .channel,
+.player-shell button {
+    scroll-margin: 8px;
+}

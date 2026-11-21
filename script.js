@@ -1822,6 +1822,184 @@ function initializePlayOn() {
     loadAllServers();
 }
 
+
+/* ==========================================
+   ANDROID TV REMOTE / D-PAD NAVIGATION
+========================================== */
+
+function getTVChannelButtons() {
+    return [...channelsBox.querySelectorAll("button.channel")];
+}
+
+function focusTVChannel(direction = 0) {
+    const buttons = getTVChannelButtons();
+
+    if (!buttons.length) return;
+
+    const focusedIndex = buttons.indexOf(document.activeElement);
+
+    const selectedIndex = buttons.findIndex(button =>
+        button.classList.contains("selected")
+    );
+
+    let index = focusedIndex >= 0
+        ? focusedIndex
+        : selectedIndex >= 0
+            ? selectedIndex
+            : 0;
+
+    if (focusedIndex >= 0) {
+        index += direction;
+    }
+
+    index = Math.max(0, Math.min(index, buttons.length - 1));
+
+    buttons[index].focus({ preventScroll: true });
+
+    buttons[index].scrollIntoView({
+        block: "nearest",
+        behavior: "smooth"
+    });
+}
+
+function focusTVPlayer() {
+    const target =
+        $("fullscreen-btn") ||
+        $("fit-btn") ||
+        videoContainer;
+
+    if (!target) return;
+
+    target.focus({ preventScroll: true });
+    showPlayerNavigation();
+}
+
+function isTVChannelFocused(element) {
+    return !!element?.closest("#channels .channel");
+}
+
+function isTVPlayerFocused(element) {
+    return !!element?.closest("#player-shell");
+}
+
+function isTextInputFocused(element) {
+    return (
+        element?.tagName === "INPUT" ||
+        element?.tagName === "TEXTAREA" ||
+        element?.tagName === "SELECT" ||
+        element?.isContentEditable
+    );
+}
+
+document.addEventListener("keydown", event => {
+    const key = event.key;
+    const active = document.activeElement;
+
+    // Do not interfere with typing in search or other inputs.
+    if (isTextInputFocused(active)) return;
+
+    const channelFocused = isTVChannelFocused(active);
+    const playerFocused = isTVPlayerFocused(active);
+
+    // UP / DOWN: Move through the channel list.
+    // FULLSCREEN: Arrow UP / DOWN changes channel immediately.
+if (
+    document.fullscreenElement &&
+    (key === "ArrowUp" || key === "ArrowDown")
+) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (key === "ArrowDown") {
+        nextChannel();
+    } else {
+        previousChannel();
+    }
+
+    showPlayerNavigation();
+    return;
+}
+
+// NORMAL SCREEN: Move through channel list.
+if (key === "ArrowDown" || key === "ArrowUp") {
+    if (channelFocused) {
+        event.preventDefault();
+
+        focusTVChannel(
+            key === "ArrowDown" ? 1 : -1
+        );
+
+        return;
+    }
+
+    if (!playerFocused) {
+        event.preventDefault();
+        focusTVChannel(0);
+        return;
+    }
+}
+
+    // RIGHT: Move from channel list to player.
+    if (key === "ArrowRight" && channelFocused) {
+        event.preventDefault();
+        focusTVPlayer();
+        return;
+    }
+
+    // LEFT: Move from player to channel list.
+    if (key === "ArrowLeft" && playerFocused) {
+        event.preventDefault();
+        focusTVChannel(0);
+        return;
+    }
+
+    // ENTER / OK: Native button activation handles channel selection.
+    if (key === "Enter" || key === "NumpadEnter") {
+        if (channelFocused || playerFocused) {
+            showPlayerNavigation();
+        }
+        return;
+    }
+
+    // PLAY / PAUSE remote keys.
+    if (
+        key === "MediaPlayPause" ||
+        key === "MediaPlay" ||
+        key === "MediaPause"
+    ) {
+        event.preventDefault();
+
+        if (key === "MediaPause") {
+            video.pause();
+        } else if (key === "MediaPlay") {
+            video.play().catch(console.warn);
+        } else if (video.paused) {
+            video.play().catch(console.warn);
+        } else {
+            video.pause();
+        }
+
+        showPlayerNavigation();
+    }
+});
+
+// Keep player controls visible while using the TV remote.
+document.addEventListener("focusin", event => {
+    if (isTVPlayerFocused(event.target)) {
+        showPlayerNavigation();
+    }
+});
+
+// Make the player area available for keyboard focus.
+if (videoContainer) {
+    videoContainer.tabIndex = 0;
+}
+
+if (playerShell) {
+    playerShell.tabIndex = -1;
+}
+
+
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializePlayOn);
 } else {
