@@ -47,8 +47,8 @@ const OLD_IPTV_ORG_URL =
 
 const NAVIGATION_HIDE_DELAY = 3000;
 
-const STREAM_START_TIMEOUT = 12000;
-const NETWORK_RETRY_DELAY = 1500;
+const STREAM_START_TIMEOUT = 8000;
+const NETWORK_RETRY_DELAY = 500;
 const MAX_NETWORK_RETRIES = 1;
 
 const $ = id => document.getElementById(id);
@@ -68,6 +68,7 @@ let servers = [];
 let channelList = [];
 let activeServerId = null;
 let currentChannelIndex = -1;
+let navigationChannelIndex = -1;
 let currentVideoMode = "fit";
 let navigationTimer = null;
 
@@ -942,11 +943,7 @@ function buildFallbackQueue(originalIndex) {
         channel => channel.index === originalIndex
     );
 
-    const nextChannel = originalServerChannels[currentPosition + 1];
 
-    if (nextChannel && !usedURLs.has(nextChannel.url)) {
-        queue.push(nextChannel.index);
-    }
 
     return queue;
 }
@@ -1029,13 +1026,14 @@ function startChannelAttempt(index, session) {
         return;
     }
 
-    currentAttemptIndex = index;
-    currentChannelIndex = index;
+currentAttemptIndex = index;
+currentChannelIndex = index;
 
-    activeServerId = channel.serverId;
+// Keep the originally selected server for channel navigation.
+// Fallback servers are used only for the current channel.
 
-    networkRetryCount = 0;
-    mediaRecoveryUsed = false;
+networkRetryCount = 0;
+mediaRecoveryUsed = false;;
 
     channelName.textContent = channel.name;
 
@@ -1057,30 +1055,40 @@ function startChannelAttempt(index, session) {
     if (window.Hls && Hls.isSupported()) {
 
         const player = new Hls({
-            startPosition: -1,
+    startPosition: -1,
 
-            maxBufferLength: 15,
-            maxMaxBufferLength: 30,
-            maxBufferSize: 30 * 1000 * 1000,
-            backBufferLength: 10,
+    // Buffer optimization
+    maxBufferLength: 10,
+    maxMaxBufferLength: 20,
+    maxBufferSize: 20 * 1000 * 1000,
+    backBufferLength: 5,
 
-            lowLatencyMode: false,
-            liveSyncDurationCount: 2,
-            liveMaxLatencyDurationCount: 6,
-            maxLiveSyncPlaybackRate: 1.2,
+    // Live stream settings
+    lowLatencyMode: false,
+    liveSyncDurationCount: 2,
+    liveMaxLatencyDurationCount: 6,
+    maxLiveSyncPlaybackRate: 1.2,
 
-            manifestLoadingMaxRetry: 4,
-            manifestLoadingRetryDelay: 1000,
+    // Faster manifest connection
+    manifestLoadingMaxRetry: 1,
+    manifestLoadingRetryDelay: 500,
+    manifestLoadingTimeOut: 7000,
 
-            levelLoadingMaxRetry: 4,
-            levelLoadingRetryDelay: 1000,
+    // Faster quality-level loading
+    levelLoadingMaxRetry: 1,
+    levelLoadingRetryDelay: 500,
+    levelLoadingTimeOut: 7000,
 
-            fragLoadingMaxRetry: 4,
-            fragLoadingRetryDelay: 1000,
+    // Faster segment recovery
+    fragLoadingMaxRetry: 2,
+    fragLoadingRetryDelay: 500,
+    fragLoadingTimeOut: 8000,
 
-            startFragPrefetch: true,
-            enableWorker: true
-        });
+    // Prepare first segment early
+    startFragPrefetch: true,
+
+    enableWorker: true
+});
 
         hls = player;
 
@@ -1182,6 +1190,9 @@ function playChannel(index) {
     cancelFallback();
 
     const session = playbackSession;
+        // Remember the originally requested channel.
+    // Fallback must not change Next/Previous navigation.
+    navigationChannelIndex = index;
 
     fallbackQueue = buildFallbackQueue(index);
 
@@ -1245,7 +1256,7 @@ function navigateChannel(direction) {
     if (!active.length) return;
 
     const position = active.findIndex(
-        c => c.index === currentChannelIndex
+        c => c.index === navigationChannelIndex
     );
 
     let next = position === -1
