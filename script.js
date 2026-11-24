@@ -739,6 +739,7 @@ async function loadOneServer(server, activate = false) {
     }
 }
 
+
 async function loadAllServers() {
     const button = $("load-all-servers");
 
@@ -768,8 +769,38 @@ async function loadAllServers() {
         renderServerTabs();
         renderChannels();
         updateChannelCount();
+
+        // AUTO PLAY FIRST CHANNEL
+        if (currentChannelIndex === -1) {
+
+            let firstChannel = getActiveChannels()[0];
+
+            // If the selected server has no channels,
+            // find the first available server.
+            if (!firstChannel) {
+                const availableServer = servers.find(server =>
+                    channelList.some(channel =>
+                        channel.serverId === server.id
+                    )
+                );
+
+                if (availableServer) {
+                    activeServerId = availableServer.id;
+                    firstChannel = getActiveChannels()[0];
+                }
+            }
+
+            if (firstChannel) {
+                video.muted = true;
+                video.autoplay = true;
+                video.playsInline = true;
+
+                playChannel(firstChannel.index);
+            }
+        }
     }
 }
+
 
 
 /* ==========================================
