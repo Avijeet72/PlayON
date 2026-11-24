@@ -1735,6 +1735,70 @@ function installNavigationCSS() {
 }
 
 
+/* ==========================================
+   PLAYON SOUND CONTROL
+========================================== */
+
+function setupSoundToggle() {
+    const button = $("sound-toggle-btn");
+
+    if (!button) return;
+
+    video.muted = true;
+
+    button.style.cssText = `
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 200;
+        padding: 10px 16px;
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 8px;
+        background: rgba(0,0,0,.8);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        opacity: 1;
+        display: block;
+        transition: opacity .4s ease;
+    `;
+
+    button.textContent = "🔇 Sound Off";
+
+    let hidden = false;
+
+    function hideSoundButton() {
+        if (hidden) return;
+
+        hidden = true;
+        button.style.opacity = "0";
+        button.style.pointerEvents = "none";
+
+        setTimeout(() => {
+            button.style.display = "none";
+        }, 400);
+    }
+
+    const hideTimer = setTimeout(hideSoundButton, 9000);
+
+    button.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        clearTimeout(hideTimer);
+
+        video.muted = false;
+        video.volume = 1;
+
+        if (video.paused) {
+            video.play().catch(console.warn);
+        }
+
+        hideSoundButton();
+    }, { once: true });
+}
+
 
 /* ==========================================
    BUTTON EVENTS
@@ -1846,9 +1910,11 @@ function initializePlayOn() {
 
     video.removeAttribute("controls");
 
-    createCenterPlayButton();
+createCenterPlayButton();
 
-    loadSavedServers();
+setupSoundToggle();
+
+loadSavedServers();
 
     createServerManager();
     createServerTabs();
